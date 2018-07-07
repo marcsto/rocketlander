@@ -313,13 +313,13 @@ class RocketLander(gym.Env):
                 self.force_dir = -1
         else:
             if action == 0:
-                self.gimbal += 0.01
+                self.gimbal += 0.1
             elif action == 1:
-                self.gimbal -= 0.01
+                self.gimbal -= 0.1
             elif action == 2:
-                self.throttle += 0.01
+                self.throttle += 0.1
             elif action == 3:
-                self.throttle -= 0.01
+                self.throttle -= 0.1
             elif action == 4:  # left
                 self.force_dir = -1
             elif action == 5:  # right
@@ -328,7 +328,6 @@ class RocketLander(gym.Env):
         self.gimbal = np.clip(self.gimbal, -GIMBAL_THRESHOLD, GIMBAL_THRESHOLD)
         self.throttle = np.clip(self.throttle, 0.0, 1.0)
         self.power = 0 if self.throttle == 0.0 else MIN_THROTTLE + self.throttle * (1 - MIN_THROTTLE)
-
         # main engine force
         force_pos = (self.lander.position[0], self.lander.position[1])
         force = (-np.sin(self.lander.angle + self.gimbal) * MAIN_ENGINE_POWER * self.power,
@@ -375,7 +374,7 @@ class RocketLander(gym.Env):
         # REWARD -------------------------------------------------------------------------------------------------------
 
         # state variables for reward
-        distance = np.linalg.norm((3 * x_distance, y_distance))  # weight x position more
+        distance = np.linalg.norm((3 * x_distance, 3 * y_distance))  # weight x position more
         speed = np.linalg.norm(vel_l)
         groundcontact = self.legs[0].ground_contact or self.legs[1].ground_contact
         brokenleg = (self.legs[0].joint.angle < 0 or self.legs[1].joint.angle > -0) and groundcontact
@@ -385,7 +384,7 @@ class RocketLander(gym.Env):
         done = False
 
         reward = -fuelcost
-
+        
         if outside or brokenleg:
             self.game_over = True
 
@@ -406,6 +405,7 @@ class RocketLander(gym.Env):
             if self.landed_ticks == FPS:
                 reward = 1.0
                 done = True
+                print("LANDED!!!!!!!!!")
 
         if done:
             reward += max(-1, 0 - 2 * (speed + distance + abs(angle) + abs(vel_a)))
@@ -419,7 +419,6 @@ class RocketLander(gym.Env):
         self.stepnumber += 1
 
         state = (state - MEAN[:len(state)]) / VAR[:len(state)]
-
         return np.array(state), reward, done, {}
 
     def render(self, mode='human', close=False):
