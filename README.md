@@ -14,6 +14,7 @@ If you want to run the environment on your own machine instead of in the colab n
 **Install openai gym with box2d support**
     
     pip install 'gym[box2d]'
+    pip install box2d box2d-kengz
 
 **Clone this repo**
 
